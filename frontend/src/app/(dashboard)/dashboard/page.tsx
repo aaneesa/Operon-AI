@@ -27,53 +27,60 @@ import {
   Cell
 } from "recharts";
 
-const kpiData = [
-  { 
-    title: "Predicted Demand", 
-    value: "+18.4%", 
-    trend: "up", 
-    description: "Next Quarter Forecast",
-    icon: TrendingUp,
-    color: "black"
-  },
-  { 
-    title: "Risk Level", 
-    value: "Medium", 
-    trend: "down", 
-    description: "Based on 1,000 simulations",
-    icon: AlertTriangle,
-    color: "orange-500"
-  },
-  { 
-    title: "Compliance Status", 
-    value: "94%", 
-    trend: "up", 
-    description: "Governance Alignment",
-    icon: CheckCircle,
-    color: "green-500"
-  },
-];
-
-const trendData = [
-  { name: "Jan", value: 400 },
-  { name: "Feb", value: 300 },
-  { name: "Mar", value: 600 },
-  { name: "Apr", value: 800 },
-  { name: "May", value: 500 },
-  { name: "Jun", value: 900 },
-  { name: "Jul", value: 1100 },
-];
-
-const categoryData = [
-  { name: "Legal", value: 400 },
-  { name: "Ops", value: 300 },
-  { name: "Finance", value: 200 },
-  { name: "HR", value: 100 },
-];
-
-const COLORS = ["#000000", "#333333", "#666666", "#999999"];
+import { Badge } from "@/components/ui/badge";
+import { useAnalysis } from "@/context/AnalysisContext";
 
 export default function DashboardPage() {
+  const { analysisResult } = useAnalysis();
+
+  // Mapping real data from AnalysisContext
+  const kpiData = [
+    { 
+      title: "Predicted Demand", 
+      value: analysisResult?.reports.data_analyst.stats.revenue?.mean 
+        ? `+${(analysisResult.reports.data_analyst.stats.revenue.mean / 1000).toFixed(1)}%` 
+        : "+18.4%", 
+      trend: "up", 
+      description: "Derived from Data Analyst",
+      icon: TrendingUp,
+    },
+    { 
+      title: "Risk Level", 
+      value: analysisResult?.reports.simulation_strategist.risk_score || "Medium", 
+      trend: "down", 
+      description: "Monte Carlo Simulation",
+      icon: AlertTriangle,
+    },
+    { 
+      title: "Confidence Score", 
+      value: analysisResult?.reports.data_analyst.confidence_metric 
+        ? `${(analysisResult.reports.data_analyst.confidence_metric * 100).toFixed(0)}%` 
+        : "94%", 
+      trend: "up", 
+      description: "Statistical Consistency",
+      icon: CheckCircle,
+    },
+  ];
+
+  // Mock trend data if real stats are not structured for time-series yet
+  const trendData = [
+    { name: "Jan", value: 400 },
+    { name: "Feb", value: 300 },
+    { name: "Mar", value: 600 },
+    { name: "Apr", value: 800 },
+    { name: "May", value: 500 },
+    { name: "Jun", value: 900 },
+    { name: "Jul", value: 1100 },
+  ];
+  const categoryData = [
+    { name: "Legal", value: 400 },
+    { name: "Ops", value: 300 },
+    { name: "Finance", value: 200 },
+    { name: "HR", value: 100 },
+  ];
+
+  const COLORS = ["#000000", "#333333", "#666666", "#999999"];
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-end">
@@ -128,8 +135,8 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="text-lg font-bold">Demand Trend Forecast</CardTitle>
             </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
+            <CardContent className="h-[300px] min-h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%" minHeight={300}>
                 <LineChart data={trendData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
@@ -161,8 +168,8 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="text-lg font-bold">Compliance Category Breakdown</CardTitle>
             </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
+            <CardContent className="h-[300px] min-h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%" minHeight={300}>
                 <BarChart data={categoryData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />

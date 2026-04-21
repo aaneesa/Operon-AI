@@ -14,8 +14,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { useAnalysis } from "@/context/AnalysisContext";
 
 export default function InsightsPage() {
+  const { analysisResult } = useAnalysis();
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-start">
@@ -68,8 +71,16 @@ export default function InsightsPage() {
                 <div className="flex items-center justify-between mb-4">
                   <CardTitle className="text-2xl font-black italic uppercase tracking-tighter">Chain-of-Thought Synthesis</CardTitle>
                   <div className="flex gap-2">
-                    <Badge className="bg-orange-100 text-orange-800 border-none rounded-sm px-3">Risk: Medium</Badge>
-                    <Badge className="bg-green-100 text-green-800 border-none rounded-sm px-3">Compliance: Verified</Badge>
+                    <Badge className={`${
+                      analysisResult?.reports.simulation_strategist.risk_score === "High" ? "bg-red-100 text-red-800" :
+                      analysisResult?.reports.simulation_strategist.risk_score === "Medium" ? "bg-orange-100 text-orange-800" :
+                      "bg-green-100 text-green-800"
+                    } border-none rounded-sm px-3`}>
+                      Risk: {analysisResult?.reports.simulation_strategist.risk_score || "N/A"}
+                    </Badge>
+                    <Badge className="bg-green-100 text-green-800 border-none rounded-sm px-3">
+                      Compliance: {analysisResult?.reports.policy_guardian.status === "compliant" ? "Verified" : "Under Review"}
+                    </Badge>
                   </div>
                 </div>
               </CardHeader>
@@ -82,8 +93,12 @@ export default function InsightsPage() {
                       Prediction
                     </div>
                     <div className="p-4 bg-[#F9F9F9] rounded-lg border border-black/5">
-                      <p className="text-3xl font-black">+18.4%</p>
-                      <p className="text-sm text-black/60 mt-1">Expected Demand Surge in Q3</p>
+                      <p className="text-3xl font-black">
+                        {analysisResult?.reports.data_analyst.stats.revenue?.mean 
+                          ? `+${(analysisResult.reports.data_analyst.stats.revenue.mean / 1000).toFixed(1)}%` 
+                          : "+0.0%"}
+                      </p>
+                      <p className="text-sm text-black/60 mt-1">Expected Demand Surge</p>
                     </div>
                   </div>
                   <div className="space-y-4">
@@ -92,8 +107,12 @@ export default function InsightsPage() {
                       Confidence
                     </div>
                     <div className="p-4 bg-[#F9F9F9] rounded-lg border border-black/5">
-                      <p className="text-3xl font-black">92.4%</p>
-                      <p className="text-sm text-black/60 mt-1">Mathematical Predictability Score</p>
+                      <p className="text-3xl font-black">
+                        {analysisResult?.reports.data_analyst.confidence_metric 
+                          ? `${(analysisResult.reports.data_analyst.confidence_metric * 100).toFixed(1)}%` 
+                          : "0.0%"}
+                      </p>
+                      <p className="text-sm text-black/60 mt-1">Mathematical Predictability</p>
                     </div>
                   </div>
                 </div>
@@ -108,10 +127,9 @@ export default function InsightsPage() {
                   </div>
                   
                   <div className="space-y-4">
-                    <h2 className="text-4xl font-black tracking-tighter leading-none">Increase core capacity by 15.5% across Northern distribution centers.</h2>
-                    <p className="text-lg text-black/60 leading-relaxed max-w-2xl">
-                      Based on current lead times and predicted demand volatility, a 15.5% increase provides an optimal buffer without over-extending capital reserves. This aligns with Policy 4.2 (Risk Management) and simulation results.
-                    </p>
+                    <h2 className="text-xl font-bold leading-relaxed">
+                      {analysisResult?.executive_summary || "No analysis data available. Please upload a dataset to generate insights."}
+                    </h2>
                   </div>
 
                   <div className="flex gap-4 pt-4">

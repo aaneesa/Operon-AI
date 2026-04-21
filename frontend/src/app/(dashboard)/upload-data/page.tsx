@@ -18,27 +18,67 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { useAnalysis } from "@/context/AnalysisContext";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function UploadDataPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<any[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
+  const { setAnalysisResult, setIsLoading, isLoading } = useAnalysis();
+  const router = useRouter();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
-      // Simulating a CSV parse
-      const mockColumns = ["Date", "Region", "Revenue", "Predicted_Demand", "Risk_Score"];
-      const mockData = Array.from({ length: 10 }).map((_, i) => ({
-        Date: `2026-04-${i + 1}`,
-        Region: i % 2 === 0 ? "North" : "South",
-        Revenue: Math.floor(Math.random() * 10000),
-        Predicted_Demand: Math.floor(Math.random() * 5000),
-        Risk_Score: i % 3 === 0 ? "High" : "Low"
-      }));
-      setColumns(mockColumns);
-      setPreview(mockData);
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        const rows = text.split("\n").filter(line => line.trim()).map(line => line.split(","));
+        if (rows.length > 0) {
+          const header = rows[0].map(h => h.trim());
+          const data = rows.slice(1, 11).map(row => {
+            const obj: any = {};
+            header.forEach((h, i) => obj[h] = row[i]?.trim());
+            return obj;
+          });
+          setColumns(header);
+          setPreview(data);
+        }
+      };
+      reader.readAsText(selectedFile);
+    }
+  };
+
+  const handleProcess = async () => {
+    if (!file) return;
+    setIsLoading(true);
+
+    try {
+      const text = await file.text();
+      const rows = text.split("\n").filter(line => line.trim()).map(line => line.split(","));
+      const header = rows[0].map(h => h.trim());
+      const fullData = rows.slice(1).map(row => {
+        const obj: any = {};
+        header.forEach((h, i) => obj[h] = row[i]?.trim());
+        return obj;
+      });
+
+      const response = await axios.post("http://localhost:8000/analyze", {
+        csv_data: fullData,
+        proposed_action: "Analyze this dataset for trends and anomalies"
+      });
+
+      setAnalysisResult(response.data);
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Analysis failed:", error);
+      alert("Failed to process data. Ensure backend is running.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -93,8 +133,12 @@ export default function UploadDataPage() {
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <Button className="w-full bg-black text-white hover:bg-black/90">
-                  Process Dataset
+                <Button 
+                  className="w-full bg-black text-white hover:bg-black/90"
+                  onClick={handleProcess}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Processing..." : "Process Dataset"}
                 </Button>
               </div>
             )}
