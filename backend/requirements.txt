@@ -12,3 +12,8 @@ motor
 pymongo
 certifi
 python-multipart
+pypdf
+sentence-transformers
+langchain
+langchain-mongodb
+langchain-huggingface
