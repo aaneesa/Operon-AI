@@ -10,12 +10,18 @@ class DataAnalyst:
         """
         Performs exploratory data analysis (EDA) and detects anomalies.
         """
+        anomalies = self._detect_anomalies(df)
+        total_data_points = len(df) * len(df.columns)
+        anomaly_count = sum(len(v) for v in anomalies.values())
+        confidence = max(0, 1 - (anomaly_count / total_data_points)) if total_data_points > 0 else 1.0
+
         summary = {
             "rows": len(df),
             "columns": list(df.columns),
             "stats": df.describe().to_dict(),
             "missing_values": df.isnull().sum().to_dict(),
-            "anomalies": self._detect_anomalies(df)
+            "anomalies": anomalies,
+            "confidence_metric": float(confidence)
         }
         return summary
 

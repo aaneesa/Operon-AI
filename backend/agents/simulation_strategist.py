@@ -12,12 +12,20 @@ class SimulationStrategist:
         """
         # Simulate normal distribution of outcomes
         simulated_outcomes = np.random.normal(base_value, base_value * variance, iterations)
+        std_dev = np.std(simulated_outcomes)
+        mean = np.mean(simulated_outcomes)
+        
+        # Risk Score Logic: Coefficient of Variation
+        cv = std_dev / mean if mean != 0 else 1.0
+        risk_score = "Low" if cv < 0.1 else "Medium" if cv < 0.25 else "High"
         
         results = {
-            "mean": float(np.mean(simulated_outcomes)),
-            "std_dev": float(np.std(simulated_outcomes)),
+            "mean": float(mean),
+            "std_dev": float(std_dev),
             "min": float(np.min(simulated_outcomes)),
             "max": float(np.max(simulated_outcomes)),
+            "risk_score": risk_score,
+            "coefficient_of_variation": float(cv),
             "percentile_5": float(np.percentile(simulated_outcomes, 5)),
             "percentile_95": float(np.percentile(simulated_outcomes, 95))
         }

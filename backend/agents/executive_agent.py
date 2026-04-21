@@ -19,12 +19,14 @@ class ExecutiveDecisionAgent:
         2. Policy Guardian Report: {policy_guardian_report}
         3. Simulation Strategist Report: {simulation_strategist_report}
         
-        Provide a final, explainable recommendation. The response should be structured as a professional executive summary.
-        Include:
-        - Key Findings
-        - Risk Assessment
-        - Strategic Recommendation
-        - "Why this action?" (Explainability)
+        Provide a final, "explainable" recommendation with a clear Chain-of-Thought (CoT) breakdown.
+        
+        The response MUST include:
+        1. Risk Score: (Low/Med/High) based on simulation variance in the Strategist Report.
+        2. Policy Citations: Direct quotes or summaries from the Policy Guardian findings justifying the decision.
+        3. Confidence Metrics: Mathematical certainty derived from the Data Analyst's confidence_metric.
+        4. Strategic Recommendation: Cohesive advice based on all inputs.
+        5. "Why this action?": A detailed explainability section.
         """
         
         completion = self.client.chat.completions.create(
