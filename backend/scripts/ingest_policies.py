@@ -50,6 +50,7 @@ def ingest_pdfs(directory_path: str):
 
     print(f"Successfully ingested {len(chunks)} chunks into MongoDB Atlas.")
 
+
 if __name__ == "__main__":
     PDF_DIR = "./data/policies"
     if not os.path.exists(PDF_DIR):

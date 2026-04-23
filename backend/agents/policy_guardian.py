@@ -1,4 +1,5 @@
 import os
+import certifi
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from typing import List, Dict, Any
 from langchain_mongodb import MongoDBAtlasVectorSearch
