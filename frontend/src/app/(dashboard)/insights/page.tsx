@@ -72,14 +72,14 @@ export default function InsightsPage() {
                   <CardTitle className="text-2xl font-black italic uppercase tracking-tighter">Chain-of-Thought Synthesis</CardTitle>
                   <div className="flex gap-2">
                     <Badge className={`${
-                      analysisResult?.reports.simulation_strategist.risk_score === "High" ? "bg-red-100 text-red-800" :
-                      analysisResult?.reports.simulation_strategist.risk_score === "Medium" ? "bg-orange-100 text-orange-800" :
+                      analysisResult?.reports?.simulation_strategist?.results?.risk_score === "High" ? "bg-red-100 text-red-800" :
+                      analysisResult?.reports?.simulation_strategist?.results?.risk_score === "Medium" ? "bg-orange-100 text-orange-800" :
                       "bg-green-100 text-green-800"
                     } border-none rounded-sm px-3`}>
-                      Risk: {analysisResult?.reports.simulation_strategist.risk_score || "N/A"}
+                      Risk: {analysisResult?.reports?.simulation_strategist?.results?.risk_score || "N/A"}
                     </Badge>
                     <Badge className="bg-green-100 text-green-800 border-none rounded-sm px-3">
-                      Compliance: {analysisResult?.reports.policy_guardian.status === "compliant" ? "Verified" : "Under Review"}
+                      Compliance: {analysisResult?.reports?.policy_guardian?.status === "compliant" ? "Verified" : "Under Review"}
                     </Badge>
                   </div>
                 </div>
@@ -94,7 +94,7 @@ export default function InsightsPage() {
                     </div>
                     <div className="p-4 bg-[#F9F9F9] rounded-lg border border-black/5">
                       <p className="text-3xl font-black">
-                        {analysisResult?.reports.data_analyst.stats.revenue?.mean 
+                        {analysisResult?.reports?.data_analyst?.stats?.revenue?.mean 
                           ? `+${(analysisResult.reports.data_analyst.stats.revenue.mean / 1000).toFixed(1)}%` 
                           : "+0.0%"}
                       </p>
@@ -108,7 +108,7 @@ export default function InsightsPage() {
                     </div>
                     <div className="p-4 bg-[#F9F9F9] rounded-lg border border-black/5">
                       <p className="text-3xl font-black">
-                        {analysisResult?.reports.data_analyst.confidence_metric 
+                        {analysisResult?.reports?.data_analyst?.confidence_metric 
                           ? `${(analysisResult.reports.data_analyst.confidence_metric * 100).toFixed(1)}%` 
                           : "0.0%"}
                       </p>

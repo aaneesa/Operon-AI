@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Upload, FileSpreadsheet, X, Check } from "lucide-react";
+import { Upload, FileSpreadsheet, X, Check, AlertTriangle } from "lucide-react";
 import { 
   Card, 
   CardContent, 
@@ -26,7 +26,7 @@ export default function UploadDataPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<any[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
-  const { setAnalysisResult, setIsLoading, isLoading } = useAnalysis();
+  const { runAnalysis, loading, error: analysisError } = useAnalysis();
   const router = useRouter();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,7 +37,7 @@ export default function UploadDataPage() {
       const reader = new FileReader();
       reader.onload = (event) => {
         const text = event.target?.result as string;
-        const rows = text.split("\n").filter(line => line.trim()).map(line => line.split(","));
+        const rows = text.split(/\r?\n/).filter(line => line.trim()).map(line => line.split(","));
         if (rows.length > 0) {
           const header = rows[0].map(h => h.trim());
           const data = rows.slice(1, 11).map(row => {
@@ -55,11 +55,16 @@ export default function UploadDataPage() {
 
   const handleProcess = async () => {
     if (!file) return;
-    setIsLoading(true);
 
     try {
       const text = await file.text();
-      const rows = text.split("\n").filter(line => line.trim()).map(line => line.split(","));
+      const rows = text.split(/\r?\n/).filter(line => line.trim()).map(line => line.split(","));
+      
+      if (rows.length < 2) {
+        alert("The CSV file must contain a header and at least one data row.");
+        return;
+      }
+
       const header = rows[0].map(h => h.trim());
       const fullData = rows.slice(1).map(row => {
         const obj: any = {};
@@ -67,18 +72,11 @@ export default function UploadDataPage() {
         return obj;
       });
 
-      const response = await axios.post("http://localhost:8000/analyze", {
-        csv_data: fullData,
-        proposed_action: "Analyze this dataset for trends and anomalies"
-      });
-
-      setAnalysisResult(response.data);
+      await runAnalysis("Analyze this dataset for trends and anomalies", fullData);
       router.push("/dashboard");
     } catch (error) {
       console.error("Analysis failed:", error);
       alert("Failed to process data. Ensure backend is running.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -98,27 +96,32 @@ export default function UploadDataPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-1 border-black/5 border-dashed border-2 bg-transparent h-fit">
           <CardContent className="p-8">
+            {analysisError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg flex items-center gap-2 text-red-800 text-xs font-bold">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                {analysisError}
+              </div>
+            )}
+            
             {!file ? (
-              <div className="flex flex-col items-center justify-center text-center space-y-4">
+              <label className="flex flex-col items-center justify-center text-center space-y-4 cursor-pointer border-2 border-dashed border-black/10 rounded-2xl p-12 hover:bg-black/5 transition-colors">
                 <div className="w-12 h-12 rounded-full bg-black/5 flex items-center justify-center">
                   <Upload className="w-6 h-6 text-black/40" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold">Click or drag to upload CSV</p>
+                  <p className="text-sm font-bold">Click to upload CSV</p>
                   <p className="text-xs text-black/40 mt-1">Maximum file size 50MB</p>
                 </div>
-                <label className="cursor-pointer">
-                  <input 
-                    type="file" 
-                    className="hidden" 
-                    accept=".csv,.json" 
-                    onChange={handleFileChange} 
-                  />
-                  <Button variant="outline" className="mt-2 border-black/10 hover:bg-black/5">
-                    Select File
-                  </Button>
-                </label>
-              </div>
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  accept=".csv,.json" 
+                  onChange={handleFileChange} 
+                />
+                <div className="mt-2 inline-flex h-9 items-center justify-center rounded-lg border border-black/10 px-4 text-sm font-bold hover:bg-black/5 transition-colors">
+                  Select File
+                </div>
+              </label>
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-black/5 rounded-lg">
@@ -134,11 +137,11 @@ export default function UploadDataPage() {
                   </button>
                 </div>
                 <Button 
-                  className="w-full bg-black text-white hover:bg-black/90"
+                  className="w-full bg-black text-white hover:bg-black/90 h-10 font-bold"
                   onClick={handleProcess}
-                  disabled={isLoading}
+                  disabled={loading}
                 >
-                  {isLoading ? "Processing..." : "Process Dataset"}
+                  {loading ? "Processing..." : "Process Dataset"}
                 </Button>
               </div>
             )}
