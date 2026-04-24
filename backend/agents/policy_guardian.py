@@ -30,17 +30,23 @@ class PolicyGuardian:
         """
         Queries the vector database of company documents to ensure alignment with governance.
         """
-        relevant_docs = self.vector_search.similarity_search(proposed_action, k=3)
+        try:
+            relevant_docs = self.vector_search.similarity_search(proposed_action, k=3)
+        except Exception as e:
+            print(f"Vector search failed (check if index is created): {e}")
+            relevant_docs = []
         
         relevant_policies = [
             {"content": doc.page_content, "metadata": doc.metadata} 
             for doc in relevant_docs
         ]
         
+        status = "compliant" if relevant_policies else "under_review"
+        
         compliance_report = {
             "action": proposed_action,
-            "status": "compliant" if relevant_policies else "under_review",
+            "status": status,
             "relevant_policies": relevant_policies,
-            "summary": "Action aligns with the following policies." if relevant_policies else "No specific policy found. Requires manual review."
+            "summary": "Action aligns with the following policies." if relevant_policies else "No specific policy found or index missing. Requires manual review."
         }
         return compliance_report
